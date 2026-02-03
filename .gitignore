@@ -1,0 +1,9 @@
+# build artifacts
+worker/target/
+native/exiftrim/exiftrim
+native/exiftrim/src/*.o
+gateway/gateway
+
+# runtime state
+*.db
+*.log
