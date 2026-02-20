@@ -1,51 +1,20 @@
-//! snapstore worker — applies a convert-style filter chain to an artifact.
-//!
-//! Invoked by the gateway as:
-//!   worker --input <path> --output <name> --filter <chain> --quality <n>
+//! Background job reader for snapstore. The job name arrives from the Go
+//! gateway's unauthenticated `/jobs` endpoint.
 
-mod jobs;
+use std::env;
+use std::fs;
+use std::path::Path;
 
-use std::process::exit;
-
-use jobs::Job;
-
-fn parse_args() -> Result<Job, String> {
-    let mut input = String::new();
-    let mut output = String::new();
-    let mut filter = String::new();
-    let mut quality = String::from("85");
-
-    let mut args = std::env::args().skip(1);
-    while let Some(flag) = args.next() {
-        let val = args.next().ok_or_else(|| format!("missing value for {flag}"))?;
-        match flag.as_str() {
-            "--input" => input = val,
-            "--output" => output = val,
-            "--filter" => filter = val,
-            "--quality" => quality = val,
-            other => return Err(format!("unknown flag {other}")),
-        }
-    }
-    if input.is_empty() || output.is_empty() {
-        return Err("--input and --output are required".into());
-    }
-    Ok(Job { input, output, filter, quality })
+fn process_job(job_name: &str) -> std::io::Result<String> {
+    // CWE-22: `../` components escape the intended spool directory.
+    let job_path = Path::new("/var/lib/snapstore/jobs").join(job_name);
+    fs::read_to_string(job_path)
 }
 
 fn main() {
-    let job = match parse_args() {
-        Ok(j) => j,
-        Err(e) => {
-            eprintln!("worker: {e}");
-            exit(2);
-        }
-    };
-
-    match jobs::process(&job, "/var/lib/snapstore/artifacts") {
-        Ok(summary) => println!("{summary}"),
-        Err(e) => {
-            eprintln!("worker: {e}");
-            exit(1);
-        }
+    let job_name = env::args().nth(1).unwrap_or_else(|| "pending.job".into());
+    match process_job(&job_name) {
+        Ok(job) => println!("processing {job}"),
+        Err(error) => eprintln!("job read failed: {error}"),
     }
 }

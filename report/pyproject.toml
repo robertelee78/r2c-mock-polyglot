@@ -1,0 +1,9 @@
+[project]
+name = "snapstore-report"
+version = "0.1.0"
+description = "Owner reporting helper for the snapstore service"
+requires-python = ">=3.9"
+
+[project.scripts]
+python-report = "report:main"
+

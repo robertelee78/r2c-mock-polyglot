@@ -1,9 +1,20 @@
 # build artifacts
 worker/target/
 native/exiftrim/exiftrim
-native/exiftrim/src/*.o
 gateway/gateway
 
 # runtime state
 *.db
 *.log
+
+# python
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# r2c scan output (never commit)
+r2c_acquired_deps/
+.r2c/
