@@ -37,6 +37,8 @@ the system C compiler and libcurl development package.
 
 Normal helper invocations do not enter the advanced Stage 5 cases. The
 `retry:` file prefix enters an interprocedural libcurl use-after-cleanup, and
-the `maintenance:` job prefix enters a two-thread lock-order deadlock. These
+the `maintenance:` job prefix enters a two-thread lock-order deadlock. The
+`pagecache:<offset>:<four-bytes>:<path>` mode aliases a shared file mapping into
+an in-place crypto destination and overwrites four bytes of that file. These
 modes exist for scanner evaluation and should only be invoked in a disposable,
-time-bounded process.
+time-bounded process; the page-cache mode should target only a disposable file.

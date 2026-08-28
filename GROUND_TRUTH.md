@@ -12,6 +12,7 @@ treated as examples, tests, or out-of-scope code.
 | SNAP-004 | Python report | SQL injection in `lookup_owner` | CWE-89 | Stage 3 static SAST | `GET /reports?owner=...` to `sqlite3.Connection.execute` through the child-process boundary |
 | SNAP-005 | C exiftrim | libcurl easy-handle use after cleanup | CWE-416 | Stage 5 `backend-network-crypto` | `GET /trim?file=retry:...` through cleanup, cross-function transfer, and reuse |
 | SNAP-006 | Rust worker | ABBA lock-order deadlock | CWE-833 | Stage 5 concurrency seam | `POST /jobs?name=maintenance:...` starts both lock-taking threads and blocks the worker |
+| SNAP-007 | C exiftrim | file-backed page aliased into an in-place crypto destination | CWE-73 / CWE-669 | Future kernel/crypto page-provenance plugin; current product gap | `GET /trim?file=pagecache:<offset>:<four-bytes>:<path>` selects the file, offset, and scratch-write value |
 
 Expected analysis units:
 
@@ -88,6 +89,51 @@ They are cross-unit boundaries, not command-injection findings.
   without the explicit prefix, and proves the multi-function participant and
   topology behavior that distinguishes Stage 5 from isolated function review.
 
+## SNAP-007 — file-backed page transferred into a writable crypto sphere
+
+- **Files and functions:** `native/exiftrim/src/main.c`:
+  `map_file_crypto_source`, `choose_in_place_destination`, and
+  `finish_authenticated_decrypt`. `decrypt_mapped_metadata`, `main`, and the
+  Go gateway's `handleRequest` are reachability and parsing context.
+- **Defective anti-pattern:** the unauthenticated caller selects a service-
+  writable file, byte offset, and four-byte value. `map_file_crypto_source`
+  creates a real `MAP_SHARED` file mapping. The zero-copy optimization in
+  `choose_in_place_destination` aliases those file-backed source pages as the
+  crypto destination without checking their provenance. Crypto completion
+  then uses that destination as scratch space and flushes the four-byte write
+  into the backing file. This is a deterministic integrity violation across
+  the caller/service privilege boundary, not a simulated marker.
+- **Why isolated review is insufficient:** mapping a file as a crypto source,
+  selecting an in-place destination, and writing a four-byte sequence scratch
+  value are individually plausible operations. The bug exists only when the
+  source's file-backed provenance is carried through the alias decision to the
+  write sink.
+- **Expected Stage 5 recognition:** no current built-in plugin recognizes this
+  relationship. It is an intentional future kernel/crypto domain-plugin target
+  with the exact structural shape `SharedFilePageSource` to
+  `InPlaceDestinationAlias` to `CryptoScratchWrite`, retaining the selected
+  offset and the alias edge. This expected gap must not be reported as a
+  successful current nomination.
+- **Expected participants:** `map_file_crypto_source` is the resource-
+  provenance producer, `choose_in_place_destination` is the unsafe transfer/
+  alias participant, and `finish_authenticated_decrypt` is the write
+  participant. `decrypt_mapped_metadata`, `main`, and `handleRequest` are
+  context only.
+- **Expected Stage 6 review unit:** one ordered joint unit containing all three
+  participants, with the shared-file mapping, source/destination alias, and
+  four-byte write connected in the handoff. None of the three may be replaced
+  by a context-only caller.
+- **Public-vulnerability influence:** this is a safe userland analogue of the
+  resource-provenance failure in [Copy Fail (CVE-2026-31431)](https://xint.io/blog/copy-fail-linux-distributions):
+  a zero-copy source retains file-page identity, an in-place crypto design
+  moves it into a writable destination sphere, and a four-byte scratch write
+  corrupts the page. It deliberately does not contain AF_ALG exploit code or
+  target privileged system binaries.
+- **Why it earns its cost:** it adds a distinct domain relationship—page
+  provenance crossing a crypto-buffer ownership boundary—that neither the
+  libcurl lifetime case nor the lock topology covers. It is portable POSIX C,
+  adds no dependency, and is safely demonstrable using a disposable file.
+
 ## Independent reality check
 
 On 2026-08-27, OpenCode 1.18.23 with `opencode/kimi-k3` reviewed only the C
@@ -97,3 +143,10 @@ use-after-cleanup and SNAP-006 as a deterministic cross-function CWE-833/CWE-667
 deadlock, rating both as real advanced security defects. It also distinguished
 the pre-existing simple `strcpy` and path-traversal cases and rejected unrelated
 code as false positives.
+
+After SNAP-007 was added, a fresh blind review gave it the firm verdict **REAL
+SECURITY DEFECT**. Kimi traced `argv` through the attacker-selected path,
+`O_RDWR` open, `MAP_SHARED` source, in-place destination alias, four-byte write,
+and `msync`. It classified the concrete arbitrary-file-write interface as
+CWE-73 while confirming that the security property is visible only through the
+cross-function backing-store and alias topology.
