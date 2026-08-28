@@ -1,9 +1,10 @@
 CC      ?= cc
 CFLAGS  ?= -O2 -g -Wall
+LDLIBS  ?= -lcurl
 BINDIR  ?= /usr/local/libexec/snapstore
 
 exiftrim: src/main.c
-	$(CC) $(CFLAGS) -o $@ src/main.c
+	$(CC) $(CFLAGS) -o $@ src/main.c $(LDLIBS)
 
 install: exiftrim
 	install -d $(BINDIR)

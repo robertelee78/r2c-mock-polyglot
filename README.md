@@ -26,9 +26,17 @@ GET  /reports?owner=<o>   owner report via the python helper
 
 ```sh
 (cd gateway && go build ./...)          # stdlib only, no cgo
-(cd native/exiftrim && make)
+(cd native/exiftrim && make)             # requires libcurl headers and library
 (cd worker && cargo build)              # no external deps
 ```
 
-All four units build in well under a second; there are no downloaded
-dependencies and no native toolchain beyond a C compiler.
+There are no downloaded language-package dependencies. The native helper uses
+the system C compiler and libcurl development package.
+
+## Deliberately dangerous fixture modes
+
+Normal helper invocations do not enter the advanced Stage 5 cases. The
+`retry:` file prefix enters an interprocedural libcurl use-after-cleanup, and
+the `maintenance:` job prefix enters a two-thread lock-order deadlock. These
+modes exist for scanner evaluation and should only be invoked in a disposable,
+time-bounded process.
