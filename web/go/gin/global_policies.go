@@ -5,23 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	reflectingCorsHandler gin.HandlerFunc
-	trustedOriginHandler  gin.HandlerFunc
-	opaqueOriginHandler   gin.HandlerFunc
-)
+var reflectingCorsHandler = cors.New(cors.Config{AllowCredentials: true, AllowOriginFunc: func(origin string) bool { return true }})
 
-func init() {
-	reflectingCorsHandler = cors.New(cors.Config{AllowCredentials: true, AllowOriginFunc: func(origin string) bool { return true }})
-}
+var trustedOriginHandler = cors.New(cors.Config{AllowCredentials: true, AllowOrigins: []string{"https://trusted.example"}})
 
-func init() {
-	trustedOriginHandler = cors.New(cors.Config{AllowCredentials: true, AllowOrigins: []string{"https://trusted.example"}})
-}
-
-func init() {
-	opaqueOriginHandler = cors.New(cors.Config{AllowCredentials: true, AllowOriginFunc: func(origin string) bool { return opaqueValue(origin) != "" }})
-}
+var opaqueOriginHandler = cors.New(cors.Config{AllowCredentials: true, AllowOriginFunc: func(origin string) bool { return opaqueValue(origin) != "" }})
 
 func InstallPackagePolicies(router *gin.Engine) {
 	router.Group("/reflecting").Use(reflectingCorsHandler)

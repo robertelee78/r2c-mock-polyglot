@@ -6,23 +6,11 @@ import (
 	"net/http"
 )
 
-var (
-	reflectingCorsHandler func(http.Handler) http.Handler
-	trustedOriginHandler  func(http.Handler) http.Handler
-	opaqueOriginHandler   func(http.Handler) http.Handler
-)
+var reflectingCorsHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowOriginFunc: func(request *http.Request, origin string) bool { return true }})
 
-func init() {
-	reflectingCorsHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowOriginFunc: func(request *http.Request, origin string) bool { return true }})
-}
+var trustedOriginHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowedOrigins: []string{"https://trusted.example"}})
 
-func init() {
-	trustedOriginHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowedOrigins: []string{"https://trusted.example"}})
-}
-
-func init() {
-	opaqueOriginHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowOriginFunc: func(request *http.Request, origin string) bool { return opaqueValue(origin) != "" }})
-}
+var opaqueOriginHandler = cors.Handler(cors.Options{AllowCredentials: true, AllowOriginFunc: func(request *http.Request, origin string) bool { return opaqueValue(origin) != "" }})
 
 func InstallPackagePolicies(router chi.Router, api http.Handler) {
 	router.With(reflectingCorsHandler).Mount("/reflecting", api)
