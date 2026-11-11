@@ -13,8 +13,8 @@ public class PropertiesQualification {
     DefaultCookieSerializer serializer = new DefaultCookieSerializer(); serializer.setUseSecureCookie(secure);
     CookieHttpSessionIdResolver resolver = new CookieHttpSessionIdResolver(); resolver.setCookieSerializer(serializer); return resolver;
   }
-  @Bean public CookieHttpSessionIdResolver malformedSessions(@Value("${qualification.malformed.secure}") boolean secure) {
-    DefaultCookieSerializer serializer = new DefaultCookieSerializer(); serializer.setUseSecureCookie(secure);
+  @Bean public CookieHttpSessionIdResolver malformedSessions(@Value("${qualification.malformed.secure}") boolean secure, @Value("${qualification.malformed.http-only}") boolean httpOnly) {
+    DefaultCookieSerializer serializer = new DefaultCookieSerializer(); serializer.setUseSecureCookie(secure); serializer.setUseHttpOnlyCookie(httpOnly);
     CookieHttpSessionIdResolver resolver = new CookieHttpSessionIdResolver(); resolver.setCookieSerializer(serializer); return resolver;
   }
   @Bean public CookieHttpSessionIdResolver charsetSessions(@Value("${qualification.charset.secure}") boolean secure) {
