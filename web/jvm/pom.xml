@@ -1,0 +1,6 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"><modelVersion>4.0.0</modelVersion>
+<parent><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-parent</artifactId><version>3.3.5</version><relativePath/></parent>
+<groupId>org.r2c.fixtures</groupId><artifactId>o84-jvm</artifactId><version>1.0.0</version><packaging>pom</packaging>
+<properties><java.version>17</java.version><kotlin.version>2.0.21</kotlin.version><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+<modules><module>java-mvc-positive</module><module>java-mvc-control</module><module>java-mvc-uncertain</module><module>java-webflux-positive</module><module>java-webflux-control</module><module>java-webflux-uncertain</module><module>kotlin-mvc-positive</module><module>kotlin-mvc-control</module><module>kotlin-mvc-uncertain</module><module>kotlin-webflux-positive</module><module>kotlin-webflux-control</module><module>kotlin-webflux-uncertain</module></modules>
+</project>

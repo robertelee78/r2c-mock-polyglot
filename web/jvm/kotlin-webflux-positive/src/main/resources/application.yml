@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:o84
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+web:
+  cookie:
+    secure: false
+  origins: https://configured.example

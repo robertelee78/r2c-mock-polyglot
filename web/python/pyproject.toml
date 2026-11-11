@@ -1,0 +1,26 @@
+[project]
+name = "r2c-mock-polyglot-web-python"
+version = "0.2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "Django==5.2.19",
+    "djangorestframework==3.18.3",
+    "django-cors-headers==4.9.0",
+    "Flask==3.1.3",
+    "Flask-WTF==1.3.0",
+    "Flask-Cors==6.0.5",
+    "Flask-Principal==0.4.0",
+    "Jinja2==3.1.6",
+    "MarkupSafe==3.0.4",
+    "fastapi==0.162.4",
+    "starlette==1.10.0",
+    "pydantic==2.14.3",
+    "SQLAlchemy==2.1.8",
+    "itsdangerous==2.2.0",
+]
+
+[tool.uv]
+package = false
+dependency-metadata = [
+    { name = "flask-principal", version = "0.4.0", requires-dist = ["Flask", "blinker"] },
+]

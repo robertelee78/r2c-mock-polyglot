@@ -1,0 +1,3 @@
+@model string
+<section>@Html.Raw(Model)</section>
+@await Html.PartialAsync("_RawPartial", Model)

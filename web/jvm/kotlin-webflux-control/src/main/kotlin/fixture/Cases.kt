@@ -1,0 +1,37 @@
+package fixture
+import org.springframework.web.bind.annotation.*
+import org.springframework.http.*
+import org.springframework.web.util.HtmlUtils
+import org.springframework.web.reactive.result.view.Rendering
+import org.springframework.web.server.WebSession
+import org.springframework.web.server.ResponseStatusException
+import org.springframework.security.web.csrf.CsrfToken
+import org.springframework.security.web.csrf.DefaultCsrfToken
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.data.repository.CrudRepository
+import org.springframework.beans.BeanUtils
+import java.util.function.UnaryOperator
+@RestController
+@EnableMethodSecurity
+open class Cases(private val repository: CrudRepository<Account, Long>, private val renderer: UnaryOperator<String>) {
+  @GetMapping("/html")
+  open fun html(@RequestParam input: String): ResponseEntity<String> { return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(HtmlUtils.htmlEscape(input)) }
+  @GetMapping("/redirect")
+  open fun redirect(@RequestParam target: String): Rendering { return Rendering.redirectTo("/account").build() }
+  @GetMapping("/token")
+  open fun token(session: WebSession): String { val token: String = java.util.UUID.randomUUID().toString(); session.getAttributes().put("formToken", token); return token }
+  @PostMapping("/state")
+  open fun change(session: WebSession, @RequestHeader("X-CSRF-TOKEN") provided: String, @RequestParam value: String): String {
+    val token: CsrfToken = DefaultCsrfToken("X-CSRF-TOKEN", "_csrf", session.getAttributes().get("formToken") as String)
+    if (!token.getToken().equals(provided)) { throw ResponseStatusException(HttpStatus.FORBIDDEN) }
+    session.getAttributes().put("displayName", value); return "changed"
+  }
+  @GetMapping("/policy") @PreAuthorize("hasRole('OPERATOR')")
+  open fun policy(): String { return "policy protected" }
+  @PostMapping("/account")
+  open fun account(@RequestBody input: InputAccount, @AuthenticationPrincipal principal: UserDetails): Account { val target: Account = Account(); target.owner = principal.getUsername(); BeanUtils.copyProperties(input, target, "owner"); return repository.save(target) }
+  private fun accepted(value: String): Boolean { return value.length > 20 }
+}

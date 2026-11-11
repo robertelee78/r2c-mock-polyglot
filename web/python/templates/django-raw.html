@@ -1,0 +1,6 @@
+<section class="account-display">
+  {{ html|safe }}
+</section>
+<aside class="account-preview">
+  {% autoescape off %}<div>{{ html }}</div>{% endautoescape %}
+</aside>

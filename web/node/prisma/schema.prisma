@@ -1,0 +1,9 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "sqlite"
+ url = "file:corpus.db" }
+model User {
+ id Int @id @default(autoincrement())
+ name String
+ tenant String
+ role String @default("reader")
+}

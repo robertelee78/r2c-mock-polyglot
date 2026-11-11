@@ -1,0 +1,6 @@
+cookie:
+  secure: true
+  httpOnly: true
+cors:
+  credentials: false
+  origin: https://trusted.example

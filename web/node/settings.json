@@ -1,0 +1,11 @@
+{
+  "cookie": {
+    "secure": false,
+    "httpOnly": true
+  },
+  "cors": {
+    "credentials": true,
+    "origin": true
+  },
+  "views": "web/node/views"
+}

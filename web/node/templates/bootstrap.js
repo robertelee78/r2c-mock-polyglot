@@ -1,0 +1,10 @@
+import express from "express";
+import Handlebars from "handlebars";
+import {readFile,readFileSync} from "node:fs";
+import {router} from "./router.js";
+export const app=express();
+app.set("views","web/node/views");
+app.set("view engine","ejs");
+app.engine("hbs",function hbsEngine(file,options,done){readFile(file,"utf8",function readTemplate(error,source){if(error)return done(error);try{done(null,Handlebars.compile(source)(options));}catch(error){done(error);}});});
+Handlebars.registerPartial("fragment",Handlebars.compile(readFileSync("web/node/views/raw.hbs","utf8")));
+app.use("/templates",router);
