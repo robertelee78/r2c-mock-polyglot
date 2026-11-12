@@ -30,6 +30,7 @@ app.config["SECRET_KEY"] = os.environ["O84_SESSION_SECRET"]
 csrf = CSRFProtect(app)
 principal = Principal(app)
 editor_permission = Permission(RoleNeed("editor"))
+policy_permission = Permission(RoleNeed("editor"))
 bp = Blueprint("accounts", __name__, url_prefix="/accounts")
 
 
@@ -100,8 +101,8 @@ def authorization_control():
 
 @bp.post("/authorization/uncertain")
 def authorization_uncertain():
-    if not editor_permission.can():
-        deny_policy(editor_permission)
+    if not policy_permission.can():
+        deny_policy(policy_permission)
     session["changed"] = request.form["value"]
     return "updated"
 

@@ -30,6 +30,8 @@ app.config["SECRET_KEY"] = os.environ["O84_SESSION_SECRET"]
 csrf = CSRFProtect(app)
 principal = Principal(app)
 editor_permission = Permission(RoleNeed("editor"))
+escalation_permission = Permission(RoleNeed("admin"))
+policy_permission = Permission(RoleNeed("editor"))
 
 
 @app.get("/html/positive")
@@ -114,10 +116,24 @@ def authorization_control():
 
 @app.post("/authorization/uncertain")
 def authorization_uncertain():
-    if not editor_permission.can():
-        deny_policy(editor_permission)
+    if not policy_permission.can():
+        deny_policy(policy_permission)
     session["changed"] = request.form["value"]
     return "updated"
+
+
+@app.post("/authorization/escaped")
+def authorization_escaped():
+    if not escalation_permission.can():
+        abort(403)
+    session["changed"] = request.form["value"]
+    return "updated"
+
+
+@app.post("/authorization/escaped/deny")
+def authorization_escaped_deny():
+    deny_policy(escalation_permission)
+    return "denied"
 
 
 @app.post("/binding/positive")
