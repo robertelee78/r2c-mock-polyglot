@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Pages/Orders.cshtml.cs" Link="Pages/Orders.cshtml.cs" />
+    <Content Include="../Pages/Orders.cshtml" Link="Pages/Orders.cshtml" />
+  </ItemGroup>
+</Project>
